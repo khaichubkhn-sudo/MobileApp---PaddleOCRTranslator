@@ -55,6 +55,29 @@ android {
     }
 }
 
+def paddleLiteFiles = [
+    file('libs/PaddlePredictor.jar'),
+    file('src/main/jniLibs/armeabi-v7a/libpaddle_lite_jni.so'),
+    file('src/main/jniLibs/armeabi-v7a/libc++_shared.so')
+]
+
+tasks.register('validatePaddleLiteFiles') {
+    doLast {
+        def missing = paddleLiteFiles.findAll { !it.isFile() }
+        if (!missing.isEmpty()) {
+            throw new GradleException(
+                'Missing pre-downloaded Paddle Lite files:\n' +
+                    missing.collect { " - ${it}" }.join('\n') +
+                    '\nDownload them before building; the build does not fetch them.'
+            )
+        }
+    }
+}
+
+tasks.named('preBuild').configure {
+    dependsOn('validatePaddleLiteFiles')
+}
+
 dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
