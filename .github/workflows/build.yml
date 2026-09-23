@@ -41,8 +41,6 @@ jobs:
     
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.5'
 
       - name: Set up Python (for the Paddle Lite model converter)
         uses: actions/setup-python@v5
