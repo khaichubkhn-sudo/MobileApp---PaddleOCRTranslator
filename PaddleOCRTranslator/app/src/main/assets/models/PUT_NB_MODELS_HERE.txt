@@ -1,7 +1,0 @@
-Place your two Paddle-Lite-optimized (.nb) models here, named:
-
-  det_db.nb   - text detection model (e.g. ch_PP-OCRv3_det_slim_opt.nb, renamed)
-  rec_crnn.nb - text recognition model (e.g. ch_PP-OCRv3_rec_slim_opt.nb, renamed)
-
-See README.md at the project root for exactly how to obtain and convert these.
-Delete this file once the real .nb files are in place.
