@@ -61,7 +61,7 @@ jobs:
         run: pip install paddlelite
 
       # ---- Step 1: Paddle Lite Java library (32-bit / armv7) ----
-      - name: Locate Paddle Lite armv7 release asset
+            - name: Locate Paddle Lite armv7 release asset
         id: locate_asset
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -75,17 +75,25 @@ jobs:
           fi
 
           echo "Auto-discovering latest android.armv7 release asset..."
-          URL=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
-            https://api.github.com/repos/PaddlePaddle/Paddle-Lite/releases \
-            | jq -r '
-                [.[] | select(.prerelease==false and .draft==false)]
-                | .[].assets[]
+          URL="$(
+            curl --fail-with-body -sS \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/PaddlePaddle/Paddle-Lite/releases |
+            jq -r '
+              [
+                .[]
+                | select(.prerelease == false and .draft == false)
+                | .assets[]
                 | select(.name | test("android\\.armv7"; "i"))
                 | select(.name | test("\\.(tar\\.gz|tgz|zip)$"; "i"))
                 | .browser_download_url
-              ' | head -n1)
+              ]
+              | first // empty
+            '
+          )"
 
-          if [ -z "$URL" ] || [ "$URL" = "null" ]; then
+          if [ -z "$URL" ]; then
             echo "::error::Could not auto-discover a Paddle-Lite android.armv7 release asset." \
                      "Paddle-Lite's release asset naming changes between versions. Find one" \
                      "yourself at https://github.com/PaddlePaddle/Paddle-Lite/releases and" \
