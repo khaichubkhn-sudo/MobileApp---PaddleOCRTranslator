@@ -1,0 +1,18 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // Local .aar / .jar for Paddle Lite (placed manually in app/libs, see README.md)
+        flatDir { dirs 'app/libs' }
+    }
+}
+rootProject.name = "PaddleOCRTranslator"
+include ':app'

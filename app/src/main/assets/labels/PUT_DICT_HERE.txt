@@ -1,0 +1,12 @@
+Place the character dictionary that matches your recognition model here, named:
+
+  ppocr_keys_v1.txt
+
+Get it from the official PaddleOCR repo, e.g.:
+  https://github.com/PaddlePaddle/PaddleOCR/blob/main/ppocr/utils/ppocr_keys_v1.txt
+(use the "Raw" button to download the plain text file)
+
+If you use a different language/model (e.g. the English-only or Japanese/Korean dicts),
+download the matching file instead and update the assetPath in CtcLabelDecoder.kt.
+
+Delete this file once the real dictionary is in place.
