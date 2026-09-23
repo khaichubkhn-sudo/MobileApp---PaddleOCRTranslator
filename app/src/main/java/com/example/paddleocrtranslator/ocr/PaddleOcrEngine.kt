@@ -61,6 +61,8 @@ class PaddleOcrEngine(
             // Don't leave a half-initialized engine around.
             detPredictor = null
             recPredictor = null
+            File(context.cacheDir, "det_db.nb").delete()
+            File(context.cacheDir, "rec_crnn.nb").delete()
             throw OcrException("Failed to load OCR models", t)
         }
     }
@@ -82,18 +84,24 @@ class PaddleOcrEngine(
         val outFile = File(context.cacheDir, cacheName)
         if (outFile.exists() && outFile.length() > 0) return outFile
 
+        val tempFile = File(context.cacheDir, "$cacheName.tmp")
         try {
             context.assets.open(assetPath).use { input ->
-                FileOutputStream(outFile).use { output ->
+                FileOutputStream(tempFile).use { output ->
                     val buf = ByteArray(64 * 1024)
                     while (true) {
                         val n = input.read(buf)
                         if (n < 0) break
                         output.write(buf, 0, n)
                     }
+                    output.fd.sync()
                 }
             }
+            if (!tempFile.renameTo(outFile)) {
+                throw OcrException("Could not install cached model '$cacheName'")
+            }
         } catch (t: Throwable) {
+            tempFile.delete()
             throw OcrException(
                 "Model file '$assetPath' not found in assets. Convert it with paddle_lite_opt " +
                     "and place it there — see README.md.",
