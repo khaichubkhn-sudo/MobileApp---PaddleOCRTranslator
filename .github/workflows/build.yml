@@ -121,12 +121,16 @@ jobs:
 
           JAR_PATH="$(find . -type f -name 'PaddlePredictor.jar' | head -n1)"
           SO_PATH="$(find . -type f -name 'libpaddle_lite_jni.so' -path '*armeabi-v7a*' | head -n1)"
+          CPP_PATH="$(find . -type f -name 'libc++_shared.so' -path '*armeabi-v7a*' | head -n1)"
           if [ -z "$SO_PATH" ]; then
             SO_PATH="$(find . -type f -name 'libpaddle_lite_jni.so' | head -n1)"
           fi
+          if [ -z "$CPP_PATH" ]; then
+            CPP_PATH="$(find . -type f -name 'libc++_shared.so' | head -n1)"
+          fi
 
-          if [ -z "$JAR_PATH" ] || [ -z "$SO_PATH" ]; then
-            echo "::error::Could not find PaddlePredictor.jar / libpaddle_lite_jni.so inside the downloaded archive."
+          if [ -z "$JAR_PATH" ] || [ -z "$SO_PATH" ] || [ -z "$CPP_PATH" ]; then
+            echo "::error::Could not find PaddlePredictor.jar, libpaddle_lite_jni.so, or libc++_shared.so inside the downloaded archive."
             find . -maxdepth 4
             exit 1
           fi
@@ -135,7 +139,8 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/app/src/main/jniLibs/armeabi-v7a"
           cp "$JAR_PATH" "$GITHUB_WORKSPACE/app/libs/PaddlePredictor.jar"
           cp "$SO_PATH" "$GITHUB_WORKSPACE/app/src/main/jniLibs/armeabi-v7a/libpaddle_lite_jni.so"
-          echo "Placed jar + so:"
+          cp "$CPP_PATH" "$GITHUB_WORKSPACE/app/src/main/jniLibs/armeabi-v7a/libc++_shared.so"
+          echo "Placed jar + native dependencies:"
           ls -la "$GITHUB_WORKSPACE/app/libs" "$GITHUB_WORKSPACE/app/src/main/jniLibs/armeabi-v7a"
 
       # ---- Step 2: OCR models, converted to Paddle Lite .nb format ----
@@ -187,4 +192,3 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
-          

@@ -57,11 +57,13 @@ detection, CTC decoding, memory management, translate intent, crash-proofing —
    `inference_lite_lib.android.armv7.xxx.tar.gz` (or listed under Android Java demos —
    naming has changed across releases, look for "armv7" + "java").
 3. Unpack it. Inside you'll find a `java/` folder containing `PaddlePredictor.jar`
-   (some releases ship an `.aar` instead — either works) and a `.so` under
-   `java/libs/armeabi-v7a/libpaddle_lite_jni.so`.
+  (some releases ship an `.aar` instead — either works) and native libraries under
+  `java/libs/armeabi-v7a/`, including `libpaddle_lite_jni.so` and
+  `libc++_shared.so`.
 4. Copy `PaddlePredictor.jar` (or the `.aar`) into `app/libs/` in this project.
-5. Copy `libpaddle_lite_jni.so` into `app/src/main/jniLibs/armeabi-v7a/libpaddle_lite_jni.so`
-   (create that folder). This is the native library the jar's JNI calls need at runtime.
+5. Copy both native libraries into `app/src/main/jniLibs/armeabi-v7a/` (create that
+  folder). Omitting `libc++_shared.so` causes `dlopen failed: libc++_shared.so not
+  found` when OCR starts.
 
 ## Step 2 — Get + convert the OCR models
 

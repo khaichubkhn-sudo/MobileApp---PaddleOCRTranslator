@@ -47,7 +47,10 @@ android {
         // Keep only the 32-bit .so — if the Paddle Lite jar/aar you downloaded
         // bundles other ABIs, this makes sure they're stripped from the APK.
         jniLibs {
-            pickFirsts += ["lib/armeabi-v7a/libpaddle_lite_jni.so"]
+            pickFirsts += [
+                "lib/armeabi-v7a/libpaddle_lite_jni.so",
+                "lib/armeabi-v7a/libc++_shared.so"
+            ]
         }
     }
 }
