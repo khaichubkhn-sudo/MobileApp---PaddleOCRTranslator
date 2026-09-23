@@ -6,27 +6,18 @@ hand it off to Google Translate via intent.
 ## Building via GitHub Actions (recommended)
 
 Push this repo to GitHub and the workflow at `.github/workflows/build.yml` builds a debug
-APK automatically, on every push to `main` and via manual "Run workflow". Unlike a typical
-sandboxed dev machine, GitHub's runners have open internet access, so the workflow itself
-downloads and places all three binary pieces described in Steps 1–3 below (Paddle Lite
-Java library, the two OCR models — converted with `paddle_lite_opt` — and the character
-dictionary), then runs `gradle assembleDebug`. The finished APK is attached to the run as
-the `paddle-ocr-translator-debug-apk` artifact.
+APK automatically on every push to `main`. The Paddle Lite Java library and native
+libraries must already be present in the repository; the workflow validates them, then
+downloads and converts the OCR models and downloads the character dictionary before
+running `gradle assembleDebug`. The finished APK is attached to the run as the
+`paddle-ocr-translator-debug-apk` artifact.
 
-Two things worth knowing about that workflow:
-- **Paddle-Lite's release asset naming isn't perfectly stable across versions.** The
-  workflow auto-discovers the latest `android.armv7` release asset from
-  `https://api.github.com/repos/PaddlePaddle/Paddle-Lite/releases` by pattern-matching the
-  filename. If that ever stops matching (Paddle-Lite renames things again), the job fails
-  with a clear `::error::` telling you to find the right asset URL yourself and re-run via
-  **Actions → Build APK → Run workflow → paddle_lite_asset_url**, pasting in the exact
-  `.tar.gz` URL as an override.
-- The model URLs and dictionary URL are hardcoded in the workflow's `env:` block (they're
+The model URLs and dictionary URL are hardcoded in the workflow's `env:` block (they're
   stable, canonical PaddleOCR doc links) — edit those directly if you want a different
   language/model pair.
 
-If you'd rather build locally instead of (or before pushing to) GitHub Actions, follow
-Steps 1–4 below by hand.
+If you'd rather build locally instead of pushing to GitHub Actions, follow Steps 1–4 below
+by hand.
 
 ## What's implemented here vs. what you still need to add
 
@@ -40,7 +31,7 @@ detection, CTC decoding, memory management, translate intent, crash-proofing —
 
 | Requirement | Where it's handled |
 |---|---|
-| Paddle Lite OCR, 32-bit only | `app/build.gradle` (`abiFilters "armeabi-v7a"`), `app/libs/` |
+| Paddle Lite OCR, 64-bit ARM only | `app/build.gradle` (`abiFilters "arm64-v8a"`), `app/libs/` |
 | Image picker, size < 1MB | `MainActivity.onImagePicked` + `ImagePreprocessor.loadAndValidate` |
 | Memory bounded across repeated runs (~300MB) | see "Memory design" below |
 | Pre-process image to model's input requirements | `ImagePreprocessor.prepareForDetection/Recognition` |
@@ -49,19 +40,19 @@ detection, CTC decoding, memory management, translate intent, crash-proofing —
 | Max 1–2 threads | `PaddleOcrEngine(threads=2)` → `MobileConfig.setThreads()`, single-thread `ExecutorService` for app-level work |
 | Google Translate via intent | `MainActivity.sendToGoogleTranslate` (`ACTION_SEND` to the app, browser fallback) |
 
-## Step 1 — Get the Paddle Lite Java library (32-bit)
+## Step 1 — Get the Paddle Lite Java library (64-bit ARM)
 
 1. Go to https://github.com/PaddlePaddle/Paddle-Lite/releases
-2. Download the **Android Java full-publish** package for `armeabi-v7a` (32-bit), *not*
-   arm64-v8a. The asset is typically named something like
-   `inference_lite_lib.android.armv7.xxx.tar.gz` (or listed under Android Java demos —
-   naming has changed across releases, look for "armv7" + "java").
+2. Download the **Android Java full-publish** package for `arm64-v8a` (64-bit ARM), not
+  the `armeabi-v7a` package. The asset is typically named something like
+  `inference_lite_lib.android.arm64.xxx.tar.gz` (or listed under Android Java demos —
+  naming has changed across releases, look for "arm64" + "java").
 3. Unpack it. Inside you'll find a `java/` folder containing `PaddlePredictor.jar`
   (some releases ship an `.aar` instead — either works) and native libraries under
-  `java/libs/armeabi-v7a/`, including `libpaddle_lite_jni.so` and
+  `java/libs/arm64-v8a/`, including `libpaddle_lite_jni.so` and
   `libc++_shared.so`.
 4. Copy `PaddlePredictor.jar` (or the `.aar`) into `app/libs/` in this project.
-5. Copy both native libraries into `app/src/main/jniLibs/armeabi-v7a/` (create that
+5. Copy both native libraries into `app/src/main/jniLibs/arm64-v8a/` (create that
   folder). Omitting `libc++_shared.so` causes `dlopen failed: libc++_shared.so not
   found` when OCR starts.
 

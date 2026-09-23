@@ -14,11 +14,9 @@ android {
         versionCode 1
         versionName "1.0"
 
-        // Requirement: 32-bit Paddle Lite only. Do NOT add arm64-v8a / x86 here,
-        // or the app will crash on 64-bit devices looking for a matching .so that
-        // was never bundled.
+        // Package the 64-bit ARM Paddle Lite binaries used by this app.
         ndk {
-            abiFilters "armeabi-v7a"
+            abiFilters "arm64-v8a"
         }
     }
 
@@ -44,12 +42,11 @@ android {
     }
 
     packagingOptions {
-        // Keep only the 32-bit .so — if the Paddle Lite jar/aar you downloaded
-        // bundles other ABIs, this makes sure they're stripped from the APK.
+        // Keep only the 64-bit ARM .so files required by Paddle Lite.
         jniLibs {
             pickFirsts += [
-                "lib/armeabi-v7a/libpaddle_lite_jni.so",
-                "lib/armeabi-v7a/libc++_shared.so"
+                "lib/arm64-v8a/libpaddle_lite_jni.so",
+                "lib/arm64-v8a/libc++_shared.so"
             ]
         }
     }
@@ -57,8 +54,8 @@ android {
 
 def paddleLiteFiles = [
     file('libs/PaddlePredictor.jar'),
-    file('src/main/jniLibs/armeabi-v7a/libpaddle_lite_jni.so'),
-    file('src/main/jniLibs/armeabi-v7a/libc++_shared.so')
+    file('src/main/jniLibs/arm64-v8a/libpaddle_lite_jni.so'),
+    file('src/main/jniLibs/arm64-v8a/libc++_shared.so')
 ]
 
 tasks.register('validatePaddleLiteFiles') {
@@ -86,7 +83,7 @@ dependencies {
     implementation 'androidx.exifinterface:exifinterface:1.3.7'
 
     // Paddle Lite official Java API — NOT on Maven Central.
-    // Download the "java_full_publish" (32-bit / armeabi-v7a) release from
+    // Download the "java_full_publish" (64-bit / arm64-v8a) release from
     // https://github.com/PaddlePaddle/Paddle-Lite/releases, pull out
     // java/PaddlePredictor.jar (or the .aar, if provided) and drop it into
     // app/libs/ before building. See README.md, step 2.
