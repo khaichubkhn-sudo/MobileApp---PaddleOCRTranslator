@@ -61,7 +61,7 @@ jobs:
         run: pip install paddlelite
 
       # ---- Step 1: Paddle Lite Java library (32-bit / armv7) ----
-            - name: Locate Paddle Lite armv7 release asset
+      - name: Locate Paddle Lite armv7 release asset
         id: locate_asset
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
