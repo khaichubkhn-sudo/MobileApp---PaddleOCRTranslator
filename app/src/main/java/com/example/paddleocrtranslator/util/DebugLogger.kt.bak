@@ -49,24 +49,8 @@ class DebugLogger(private val targetView: TextView) {
         log("[$tag] javaHeap=${usedMb}MB/${maxMb}MB nativeHeap=${nativeMb}MB")
     }
 
-    /**
-     * Logs [message] plus the *full* cause chain of [t], not just its own top-level message.
-     * Wrapper exceptions (like OcrException("Failed to load OCR models", cause)) are common
-     * in this app on purpose, so the underlying root cause - the part that actually explains
-     * what went wrong - has to be walked out explicitly or it never reaches this log.
-     */
     fun logError(message: String, t: Throwable?) {
-        val chain = StringBuilder("ERROR: $message")
-        var current = t
-        var depth = 0
-        while (current != null && depth < 6) { // cap depth against any pathological cycle
-            chain.append("\n  ${if (depth == 0) "->" else "  ->"} ${current.javaClass.simpleName}: ${current.message}")
-            val next = current.cause
-            if (next === current) break // defend against a self-referential cause
-            current = next
-            depth++
-        }
-        log(chain.toString())
+        log("ERROR: $message${if (t != null) " -> ${t.javaClass.simpleName}: ${t.message}" else ""}")
     }
 
     @Synchronized

@@ -196,30 +196,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleFailure(message: String, t: Throwable) {
-        val topMessage = if (t is OcrException) t.message ?: message else message
-        // The debug panel gets the full cause chain (see DebugLogger.logError) - that's where
-        // the actually-useful detail lives when t is a wrapper like OcrException. The toast
-        // stays short, but still surfaces the root cause's message when it differs from the
-        // top-level one, since "Failed to load OCR models" alone isn't actionable on its own.
-        val rootMessage = rootCause(t).message
-        val toastDetail = if (rootMessage != null && rootMessage != topMessage) {
-            "$topMessage: $rootMessage"
-        } else {
-            topMessage
-        }
-
-        logger.logError(topMessage, t)
+        val detail = if (t is OcrException) t.message ?: message else message
+        logger.logError(detail, t)
         runOnUiThread {
-            Toast.makeText(this, toastDetail, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun rootCause(t: Throwable): Throwable {
-        var current = t
-        while (true) {
-            val next = current.cause
-            if (next == null || next === current) return current
-            current = next
+            Toast.makeText(this, detail, Toast.LENGTH_LONG).show()
         }
     }
 }
